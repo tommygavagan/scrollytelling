@@ -1,0 +1,195 @@
+---
+title: "When Are Homicides Most Common?"
+author: "Tommy Gavagan"
+theme: superhero
+fontsize: 16px
+engine: knitr
+project:
+  type: website
+  output-dir: docs
+format:
+  closeread-html:
+    cr-section:
+      layout: sidebar-left
+    cr-style:
+      section-background-color: "#f3f6fa"
+      narrative-background-color-overlay: "#ffffff"
+      narrative-text-color-overlay: "#1f1f1f"
+      narrative-border-radius: 8px
+      narrative-overlay-max-width: 58%
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+library(tidyverse)
+library(plotly)
+library(htmltools)
+
+homicides <- read.csv("homicide-data.csv", fileEncoding = "latin1")
+
+month_order <- c(
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+)
+
+homicides_clean <- homicides |>
+  mutate(
+    reported_date = as.Date(as.character(reported_date), "%Y%m%d"),
+    month = factor(format(reported_date, "%B"), levels = month_order),
+    city = trimws(city)
+  ) |>
+  filter(!is.na(month), city != "")
+
+all_months <- tibble(month = factor(month_order, levels = month_order))
+all_cities <- sort(unique(homicides_clean$city))
+
+monthly_all <- homicides_clean |>
+  count(month, name = "homicides") |>
+  right_join(all_months, by = "month") |>
+  mutate(homicides = replace_na(homicides, 0)) |>
+  arrange(month)
+
+city_monthly <- homicides_clean |>
+  count(city, month, name = "homicides") |>
+  right_join(
+    expand_grid(city = all_cities, month = factor(month_order, levels = month_order)),
+    by = c("city","month")
+  ) |>
+  mutate(homicides = replace_na(homicides, 0)) |>
+  arrange(city, month)
+
+peak_month <- monthly_all |> slice_max(homicides, n = 1)
+low_month  <- monthly_all |> slice_min(homicides, n = 1)
+
+p <- plot_ly()
+
+p <- p |>
+  add_bars(
+    data = monthly_all,
+    x = ~month,
+    y = ~homicides,
+    name = "All Cities",
+    visible = TRUE,
+    hovertemplate = "<b>Month:</b> %{x}<br><b>Homicides:</b> %{y}<extra></extra>"
+  )
+
+for (i in seq_along(all_cities)) {
+  city_data <- city_monthly |> filter(city == all_cities[i])
+
+  p <- p |>
+    add_bars(
+      data = city_data,
+      x = ~month,
+      y = ~homicides,
+      name = all_cities[i],
+      visible = FALSE,
+      hovertemplate = paste(
+        "<b>City:</b>", all_cities[i], "<br>",
+        "<b>Month:</b> %{x}<br>",
+        "<b>Homicides:</b> %{y}<extra></extra>"
+      )
+    )
+}
+
+buttons <- list()
+
+buttons[[1]] <- list(
+  method = "update",
+  args = list(list(visible = c(TRUE, rep(FALSE, length(all_cities))))),
+  label = "All Cities"
+)
+
+for (i in seq_along(all_cities)) {
+  visible <- rep(FALSE, length(all_cities)+1)
+  visible[i+1] <- TRUE
+
+  buttons[[i+1]] <- list(
+    method = "update",
+    args = list(list(visible = visible)),
+    label = all_cities[i]
+  )
+}
+
+homicide_plot <- p |>
+  layout(
+    title = "Homicides by Month",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Count"),
+    updatemenus = list(list(type = "dropdown", buttons = buttons)),
+    margin = list(r = 160)
+  )
+```
+
+# Introduction
+
+Homicide is often discussed using yearly totals, but those numbers hide patterns 
+within the year. Instead of asking only where violence happens, this project 
+asks a simpler question: **when does it happen most often?**
+
+:::::::: cr-section
+
+## Why this matters
+
+If homicides consistently peak in certain months, that suggests the pattern is not random.
+Understanding timing can help show more broad behavioral/environmental influences.
+
+## Dataset overview
+
+This dataset includes reported homicide cases across multiple U.S. cities,
+each with a reported date. By grouping cases by month, 
+we can compare how counts change across the calendar year.
+(https://www.kaggle.com/datasets/joebeachcapital/homicides/data)
+
+## The question
+
+**Do homicides follow a seasonal pattern? And does that pattern change by city?**
+
+## Explore the data
+
+Use the dropdown to switch between all cities and individual cities. Hover to see exact counts.
+
+@cr-plot
+
+::: {#cr-plot}
+```{r}
+homicide_plot
+```
+:::
+
+## What stands out
+
+The distribution is not uniform. Some months clearly have higher counts than others.
+
+- Highest month: **`r peak_month$month`**
+- Lowest month: **`r low_month$month`**
+
+## Why the city filter matters
+
+The overall trend might hide differences across cities. 
+Some cities may have sharper peaks, 
+while others remain more consistent throughout the year.
+
+Use the dropdown to test this.
+
+## Open exploration
+
+This graphic raises a couple follow-up questions:
+
+- Are warmer months consistently higher?
+- Do certain cities drive the pattern?
+- Would results change if adjusted for population?
+
+The goal is not to answer everything, but to let you explore patterns freely.
+
+::::::::
+
+# Conclusion
+
+By focusing on monthly patterns instead of yearly totals, this visualization 
+reveals a clearer and more interactive view of when homicides occur. 
+The addition of city-level filtering allows users to move beyond averages
+and explore variation across locations.
+```

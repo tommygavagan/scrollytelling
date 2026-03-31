@@ -1,0 +1,9 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "When Are Homicides Most Common?",
+    "section": "",
+    "text": "Homicide is often discussed using yearly totals, but those numbers hide patterns within the year. Instead of asking only where violence happens, this project asks a simpler question: when does it happen most often?\n\n\n\n\n\n\n\nIf homicides consistently peak in certain months, that suggests the pattern is not random. Understanding timing can help show more broad behavioral/environmental influences.\n\n\n\n\n\n\n\nThis dataset includes reported homicide cases across multiple U.S. cities, each with a reported date. By grouping cases by month, we can compare how counts change across the calendar year. (https://www.kaggle.com/datasets/joebeachcapital/homicides/data)\n\n\n\n\n\n\n\nDo homicides follow a seasonal pattern? And does that pattern change by city?\n\n\n\n\n\n\n\nUse the dropdown to switch between all cities and individual cities. Hover to see exact counts.\n\n\n\n\n\n\n\n\n\n\n\n\nThe distribution is not uniform. Some months clearly have higher counts than others.\n\n\n\n\n\nHighest month: July\nLowest month: February\n\n\n\n\n\n\n\n\nThe overall trend might hide differences across cities. Some cities may have sharper peaks, while others remain more consistent throughout the year.\n\n\n\n\nUse the dropdown to test this.\n\n\n\n\n\n\n\nThis graphic raises a couple follow-up questions:\n\n\n\n\n\nAre warmer months consistently higher?\nDo certain cities drive the pattern?\nWould results change if adjusted for population?\n\n\n\n\n\nThe goal is not to answer everything, but to let you explore patterns freely."
+  }
+]
